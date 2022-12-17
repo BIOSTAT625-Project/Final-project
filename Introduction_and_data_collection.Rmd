@@ -1,0 +1,44 @@
+---
+title: "Introduction and data collection"
+author: "Xin Li"
+date: "2022-12-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+The overall goal of this project is to visualize the search volumes of depression-related words on Google and explore the factors that may impact the search. More specifically, we aim to:
+
+  * Exploring how natural factors like air quality and socioeconomic factors like employment and income affect population depression in the US;
+  
+  * Making a prediction about depression-related indices based on these factors;
+  
+  * Building an interactive visualization interface to show the prevalence of depression across time and region;
+
+# Data collection
+Since there is no established database including data we need, we had to collect data from different sources and build up our own database first.
+
+### Search volumes of depression-related words
+Weekly data on the mental health session were extracted from Google Trends for an 18-year period (2004/01/01-2022/11/01) and separated by US state for the following terms: “feeling sad,” “depressed,” “depression,” “empty,” “insomnia,” “fatigue,” “guilty,” and “suicide.” Since Google Trends only provide search volume relative to the highest point for the given region and time, we have to download the absolute search volumes using [GLIMPSE](https://meetglimpse.com/extension/) in order to compare search volumes between different time periods and states. Due to the limitation of GLIMPSE, we only get absolute and relative search volumes for the recent five years (2017/11/01-2022/11/01). Then, data of relative search volumes for the rest of the years (2004-2017) was downloaded by using the ["gtrendsR"](https://cran.r-project.org/web/packages/gtrendsR/gtrendsR.pdf) package. In order to get weekly data, we had to download the data every five years; and then, to make sure that the relative search volumes in different periods of time are comparable, we make sure that every two subsets of five years have at least one year of overlap. Linear regression models through the origin were adopted to: first, normalize the relative search volumes in different periods based on the overlapping year; and then, transform the relative search volumes to absolute search volumes.
+
+### Environmental data
+ * Data of local weather was downloaded from [VisualCrossing](https://www.visualcrossing.com/weather-api). The dataset includes daily data of the average temperature, feels like temperature, precipitation volume, precipitation type and solar radiation of each state. 
+ 
+ * Data of local air quality was downloaded by using [RAQSAPI](https://cran.r-project.org/web/packages/RAQSAPI/vignettes/RAQSAPIvignette.html) package from EPA. The dataset includes daily air quality index (AQI) of each state.
+
+### Socioeconomic data
+ * Monthly data of unemployment rates (2009-2022) by state was obtained from the website of National Conference of State Legislatures [NCSL](https://www.ncsl.org/research/labor-and-employment/state-unemployment-update.aspx).
+ 
+ * Annually data of per capita personal income (2004-2021) by state was obtained from the website of Federal Reserve Economic Data [FRED](https://fred.stlouisfed.org/release/tables?eid=257197&rid=110).
+
+* Median age by state was obtained from the website of [World Population Review](https://worldpopulationreview.com/state-rankings/median-age-by-state).
+
+* Data of education level by state was obtained from the website of U.S. Department of Agriculture [USDA](https://data.ers.usda.gov/reports.aspx?ID=17829). The dataset includes the percentage of the population in each state that fit in the following three education levels: not completing high school, completing high school only, and completing college.
+ 
+
+
+
+
