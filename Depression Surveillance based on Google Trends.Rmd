@@ -1,5 +1,5 @@
 ---
-title: "Introduction and data collection"
+title: "Depression Surveillance based on Google Trends"
 author:
   - Yuting Duan
   - Xin Li
@@ -9,7 +9,7 @@ zotero: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center", out.width = "85%")
 ```
 
 # Introduction
@@ -52,7 +52,21 @@ Weekly data on the mental health session were extracted from Google Trends for a
 
 # Shiny app: *Population Depression Data from Google Trends*
 
+We built a Shiny app named *Population Depression Data from Google Trends* to visualize our data and prediction results. It can be accessed via [`https://conchaespina.shinyapps.io/FinalProject625/`](https://conchaespina.shinyapps.io/FinalProject625/). The app is composed of a side bar serving as a dashboard and a main panel to display plots. Its default interface is shown in Figure 1.
 
+```{r, fig.cap="Default interface"}
+knitr::include_graphics("~/Documents/GitHub/Final-project/report_figures/default.png")
+```
+
+There are two plot types available to choose. If selecting "Interest over time", a line graph tracing temporal change of absolute Google Trends search volume of given keyword, time range, and region will appear in the main panel. When time range includes a future date, predicted search volumes will be plotted in a dotted line following historical trend drawn in a solid line (Figure 2). If switching to "Interest by region", a US map will be displayed whose filled color indicates the total search volume within specified time period across all the states. The menu in section "Other indicators" allows users to choose an external indicator like unemployment rate or sunlight index to compare it with search volume (Figure 3). Values of this indicator will be printed as a text label at each state. If there is no label after selecting a certain indicator, it means data are not available for the current time range. Besides, both line graph and map are rendered by `plotly` and thus are interactive. Users can zoom in or check hover texts by moving cursor.
+
+```{r, fig.cap='Line graph: Absolute search volume of keyword "Depression" between 1/1/22 and 2/28/23 in Michigan'}
+knitr::include_graphics("~/Documents/GitHub/Final-project/report_figures/line.png")
+```
+
+```{r, fig.cap='Map: Absolute search volume of keyword "Fatigue" between 1/1/20 and 10/31/22 with median age of each state'}
+knitr::include_graphics("~/Documents/GitHub/Final-project/report_figures/map.png")
+```
 
 # References
 
