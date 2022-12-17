@@ -1,6 +1,6 @@
 # Working directory: ~/Desktop/BIOSTAT 625 - Computing with Big Data/Final Project
 # setwd("~/Desktop/BIOSTAT 625 - Computing with Big Data/Final Project")
-setwd("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/")
+# setwd("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/")
 
 library(shiny)
 library(bslib)
@@ -14,24 +14,19 @@ library(rcartocolor)
 library(showtext)
 library(lubridate)
 
-# setAccountInfo(name = "conchaespina",
-#                token = "12CE5D455F897C2F0EF8017E62295CE9",
-#                secret = "kWvE26n6im+fK7rnDyyU8L3o9Bq6joXb1eSe6Trz")
-# deployApp("")
-
 state_list <- read.csv("state.csv")
 keywords_list <- c("depression", "depressed", "empty", "fatigue", 
                    "feeling sad", "guilty", "insomnia", "suicide")
 aux_data_list <- c("weather", "AQI", "income", "education", "sunlight", "unemployment rate", "median age")
 
-dat <- read.csv("Clean_data/google_trends_all.csv") %>% 
+dat <- read.csv("google_trends_all.csv") %>% 
   mutate(week = as.Date(week)) %>% 
   filter(complete.cases(.))
 
 get_aux <- function(aux_type, time_start, time_end, var_name = NULL) {
   
   if (aux_type == "weather") {
-    aux <- read.csv("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/Clean_data/weather.csv") %>% 
+    aux <- read.csv("weather.csv") %>% 
       select("name", "datetime", all_of(var_name)) %>% 
       filter((datetime >= time_start) & (datetime <= time_end)) %>% 
       group_by(name) %>% 
@@ -42,7 +37,7 @@ get_aux <- function(aux_type, time_start, time_end, var_name = NULL) {
   }
   
   else if (aux_type == "AQI") {
-    aux <- read.csv("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/Clean_data/aqi_complete.csv") %>% 
+    aux <- read.csv("aqi_complete.csv") %>% 
       select(state, date_local, Mean_aqi) %>% 
       mutate(date_local = as.Date(date_local, format = "%m/%d/%y")) %>% 
       filter((date_local >= time_start) & (date_local <= time_end)) %>% 
@@ -54,7 +49,7 @@ get_aux <- function(aux_type, time_start, time_end, var_name = NULL) {
   }
   
   else if (aux_type == "income") {
-    aux <- read.csv("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/Clean_data/personal_income_by_state.csv") %>% 
+    aux <- read.csv("personal_income_by_state.csv") %>% 
       tidyr::pivot_longer(cols = !DATE) %>% 
       filter((DATE >= year(ymd(time_start))) & (DATE <= year(ymd(time_end)))) %>% 
       group_by(name) %>% 
@@ -65,14 +60,14 @@ get_aux <- function(aux_type, time_start, time_end, var_name = NULL) {
   }
   
   else if (aux_type == "education") {
-    aux <- read.csv("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/Clean_data/EducationReport 2016-2020 (average).csv") %>% 
+    aux <- read.csv("EducationReport 2016-2020 (average).csv") %>% 
       mutate(avg = round(eval(parse(text = var_name)), digits = 2))
     aux <- aux %>% 
       right_join(usmapdata::centroid_labels("states"), by = c("State" = "full"))
   }
   
   else if (aux_type == "sunlight") {
-    aux <- read.csv("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/Clean_data/Daily Sunlight (2004-2011).csv") %>% 
+    aux <- read.csv("Daily Sunlight (2004-2011).csv") %>% 
       group_by(State) %>% 
       summarize(avg = as.character(round(mean(Avg.Daily.Sunlight, na.rm = TRUE), digits = 2)))
     aux <- aux %>% 
@@ -80,7 +75,7 @@ get_aux <- function(aux_type, time_start, time_end, var_name = NULL) {
   }
   
   else if (aux_type == "unemployment rate") {
-    aux <- read.csv("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/Clean_data/STATE-UI-RATES 2009-2022.csv") %>% 
+    aux <- read.csv("STATE-UI-RATES 2009-2022.csv") %>% 
       mutate(Month = sapply(X = Month, 
                             FUN = function(x) {which(month.abb == substr(x, start = 1, stop = 3))})) %>% 
       mutate(datetime = mapply(FUN = make_date, year = Year, month = Month)) %>% 
@@ -99,7 +94,7 @@ get_aux <- function(aux_type, time_start, time_end, var_name = NULL) {
   }
   
   else {
-    aux <- read.csv("~/Dropbox (University of Michigan)/Final project/BIO625_final_project_Rawdata/Clean_data/Median Age by state 2022.csv") %>% 
+    aux <- read.csv("Median Age by state 2022.csv") %>% 
       rename(avg = Median.Age) %>%
       right_join(usmapdata::centroid_labels("states"), by = c("State" = "abbr"))
   }
@@ -151,7 +146,8 @@ ui <- fluidPage(
         label = "Time range", 
         start = "2020-01-01", 
         end = "2022-10-31", 
-        min = "2004-01-01"
+        min = "2004-01-01", 
+        max = "2023-11-20"
       ),
       
       conditionalPanel(
@@ -202,16 +198,6 @@ ui <- fluidPage(
         )
       ),
       
-      conditionalPanel(
-        condition = "input.time_range[1] > '2022-11-20'", 
-        selectInput(
-          inputId = "algorithm", 
-          label = "Prediction algorithm", 
-          choices = list(`None` = "None"), 
-          selected = "None"
-        )
-      ),
-      
       width = 3
     ),
     
@@ -239,11 +225,11 @@ server <- function(input, output) {
   
   output$line_graph <- plotly::renderPlotly(
     expr = {
-      dat %>% 
+      gt_data <- dat %>% 
         filter((week >= input$time_range[1]) & (week <= input$time_range[2])) %>% 
         filter(keyword == input$keyword) %>% 
-        filter(region == input$region) %>% 
-        ggplot(data = ., mapping = aes(x = week, y = absolute, group = 1)) + 
+        filter(region == input$region)
+      line_plot <- ggplot(data = gt_data, mapping = aes(x = week, y = absolute, group = 1)) + 
         geom_line(color = "#63a6a0", size = 1) + 
         labs(x = "Week", y = "Absolute search volume") + 
         scale_x_date(breaks = seq.Date(from = input$time_range[1], 
@@ -253,6 +239,22 @@ server <- function(input, output) {
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
               text = element_text(family = "News Cycle"), 
               plot.margin = margin(0, 0, 0, 1, "cm"))
+      
+      if (input$time_range[2] >= "2022-12-04") {
+        pred <- read.csv("pred52.csv") %>% 
+          mutate(week = as.Date(week, format = "%m/%d/%y"), 
+                 absolute = round(absolute, digits = 0)) %>% 
+          filter(week <= input$time_range[2]) %>% 
+          filter(keyword == input$keyword) %>% 
+          filter(region == input$region)
+        pred <- rbind(gt_data[which.max(gt_data$week),], pred)
+        
+        line_plot <- line_plot + 
+          geom_line(mapping = aes(x = week, y = absolute, group = 1), data = pred, 
+                    color = "#63a6a0", size = 1, linetype = 3)
+      }
+      
+      line_plot
     }
   )
   
@@ -262,12 +264,24 @@ server <- function(input, output) {
       gt_data <- dat %>% 
         filter((week >= input$time_range[1]) & (week <= input$time_range[2])) %>% 
         filter(keyword == input$keyword) %>% 
-        filter(region != "US") %>% 
+        filter(region != "US")
+      
+      # Add prediction
+      if (input$time_range[2] >= "2022-12-04") {
+        pred <- read.csv("pred52.csv") %>% 
+          mutate(week = as.Date(week, format = "%m/%d/%y"), 
+                 absolute = round(absolute, digits = 0)) %>% 
+          filter(week <= input$time_range[2]) %>% 
+          filter(keyword == input$keyword) %>% 
+          filter(region != "US")
+          
+        gt_data <- rbind(gt_data, pred)
+      }
+      
+      gt_data <- gt_data %>% 
         group_by(region) %>% 
         summarize(absolute = sum(absolute)) %>% 
         left_join(state_list, by = c("region" = "code"))
-      
-      # Add prediction
       
       # Basic map
       map_plot <- plot_usmap(data = gt_data, values = "absolute", regions = "states", 
