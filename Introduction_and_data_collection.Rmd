@@ -3,6 +3,7 @@ title: "Introduction and data collection"
 author: "Xin Li"
 date: "2022-12-17"
 output: html_document
+zotero: true
 ---
 
 ```{r setup, include=FALSE}
@@ -10,6 +11,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Introduction
+Depression is a common mental disorder in the United States, with over 21 million adults reporting at least one major depressive episode in 2020[1]. Traditionally, epidemiological data for depression was collected through surveys. However, there are some disadvantages of survey-based methods, such as low response rates, the stigma of depression, concealment, report bias, and high costs[2]. Major organizations such as the National Institute of Mental Health (NIMH), Anxiety & Depression Association of America (ADAA), and CDC provide only limited data specific to the time and population being studied from their surveys[3].
+
+Google Trends is a free online tool that allows users to obtain big data on the search volume of different queries across various regions over time. The usefulness of internet search trends in the surveillance of mental health has been demonstrated. In 2019, Barros et al. utilized Google Trends search volumes for the prediction of national suicide rates in Ireland[4]; in 2021, Zhang et al. developed an effective method to monitor depression trends on Twitter during the COVID-19 pandemic[5]; in 2022, Wang et al. mapped depression prevalence in the United States using big data from Google Trends[3].
+
 The overall goal of this project is to visualize the search volumes of depression-related words on Google and explore the factors that may impact the search. More specifically, we aim to:
 
   * Exploring how natural factors like air quality and socioeconomic factors like employment and income affect population depression in the US;
@@ -39,6 +44,11 @@ Weekly data on the mental health session were extracted from Google Trends for a
 * Data of education level by state was obtained from the website of U.S. Department of Agriculture [USDA](https://data.ers.usda.gov/reports.aspx?ID=17829). The dataset includes the percentage of the population in each state that fit in the following three education levels: not completing high school, completing high school only, and completing college.
  
 
-
+##### References:
+1. 2020 National Survey of Drug Use and Health (NSDUH) Releases | CBHSQ Data. Accessed February 27, 2022. https://www.samhsa.gov/data/release/2020-national-survey-drug-use-and-health-nsduh-releases
+2. Boogaerts T, Degreef M, Covaci A, van Nuijs ALN. Development and validation of an analytical procedure to detect spatio-temporal differences in antidepressant use through a wastewater-based approach. Talanta. 2019;200:340-349. doi:10.1016/j.talanta.2019.03.052
+3. Wang, A., McCarron, R., Azzam, D., Stehli, A., Xiong, G., & DeMartini, J. (2022). Utilizing Big Data From Google Trends to Map Population Depression in the United States: Exploratory Infodemiology Study. JMIR Mental Health, 9(3), e35253. https://doi.org/10.2196/35253
+4. Barros, J. M., Melia, R., Francis, K., Bogue, J., O’Sullivan, M., Young, K., Bernert, R. A., Rebholz-Schuhmann, D., & Duggan, J. (2019). The Validity of Google Trends Search Volumes for Behavioral Forecasting of National Suicide Rates in Ireland. International Journal of Environmental Research and Public Health, 16(17), Article 17. https://doi.org/10.3390/ijerph16173201
+5. Zhang, Y., Lyu, H., Liu, Y., Zhang, X., Wang, Y., & Luo, J. (2021). Monitoring Depression Trends on Twitter During the COVID-19 Pandemic: Observational Study. JMIR Infodemiology, 1(1), e26769. https://doi.org/10.2196/26769
 
 
