@@ -1,0 +1,121 @@
+---
+title: "Prediction"
+author: "Yuting Duan"
+date: "2022-12-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Prediction
+We explore the model of population depression in US by Google trends and its relationship with natural and social factors and the prediction of population depression is given.    
+
+
+First, we focus on the overall depression in US. We split the data into training data and test data. The first 80% is training data and the last 20% is test data. The first model we consider is the autoregressive integrated moving average (ARIMA) time series model. Without any other information, we use the training data to fit the model and then forecast the test data. The `ggplot2` result is shown as below and test mean square error is 36.77.
+```{r, echo=FALSE}
+Depression = read.csv("~/Desktop/625/data/Depression_absolute.csv")
+Depression$Week = as.Date(Depression$Week)
+```
+
+```{r, echo=FALSE, fig.show='hide', message=FALSE}
+library(ggplot2)
+p <- ggplot(Depression, aes(x=Week, y = Absolute_mean)) +
+  geom_line() + 
+  xlab("") +
+  ggtitle("Time Series of Depression")
+
+p
+```
+
+```{r, echo=FALSE}
+#split data into training data and test data
+n = dim(Depression)[1]
+train = Depression[1:round(n*(0.8)), ]
+test = Depression[(round(n*(0.8))+1) : n, ]
+```
+
+```{r, echo=FALSE, message=FALSE}
+library(forecast)
+library(xts)
+train_ts = xts(train$Absolute_mean, train$Week)
+fit = auto.arima(train_ts)
+pred = forecast(fit, n - round(n*(0.8)))
+plot(pred, xlab ="Weekly Data",
+ylab ="Depression",
+main ="Time Series Forcast of Depression")
+```
+```{r, echo=FALSE}
+testMSE = mean((pred$mean - test$Absolute_mean)^2)
+#testMSE
+```
+
+Then we add predictors to forecast the depression in US. Natural and social-economic factors are applied here, including weather and employment. After merging the depression data and  predictors by date, time series regression model and randomForest model are buit for prediction. The p-value of the coefficient test of the model is small enough, which verifies the significance of the selected predictors. Higher employment rate and higher temperature results in lower population depression. The test mean square error for time series regression and randomForest are 24.52 and 24.43, respectively, which are lower than ARIMA model.
+```{r, echo=FALSE}
+weather = read.csv("~/Desktop/625/data/US_Weather_2004-01-01_to_2022-12-01.csv")
+Employment = read.csv("~/Desktop/625/data/National_Employment_Monthly_Update.csv")
+#View(weather)
+#View(Employment)
+names(Employment) = c("Month", 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008)
+
+id_start = which(weather$datetime == "2008/1/1")
+weather_temp = weather[id_start: dim(weather)[1], c("datetime", "temp")]
+View(weather_temp)
+weather_temp$datetime = as.Date(weather_temp$datetime)
+library(dplyr)
+library(lubridate)
+```
+
+
+```{r, echo=FALSE}
+Depression_with_temp <- Depression %>%
+  inner_join(weather_temp, by = c("Week" = "datetime")) %>%
+  mutate(year = year(Week), Month = month(Week))
+
+Depression_with_temp$Month = as.integer(Depression_with_temp$Month)
+```
+
+```{r, message=FALSE, echo=FALSE}
+Employ <- reshape::melt(Employment[,-1])[,2]
+Em <- data.frame(year = rep(2022:2008, each=12), Month = rep(1:12, 15), Employ)
+```
+
+
+```{r, echo=FALSE}
+Depression_with_temp_Employment <- Depression_with_temp %>%
+  left_join(Em, by = c("year", "Month")) %>%
+  na.omit()
+```
+
+
+```{r, echo=FALSE}
+l = lm(Absolute_mean ~ temp + Employ, data = Depression_with_temp_Employment[1:round(0.8*dim(Depression_with_temp_Employment)[1]), ])
+
+```
+```{r, echo=FALSE}
+pred = predict(l, newdata = Depression_with_temp_Employment[(round(dim(Depression_with_temp_Employment)[1]*0.8) + 1): dim(Depression_with_temp_Employment)[1]  ,] )
+```
+
+
+```{r, echo=FALSE}
+MSE = mean((pred - Depression_with_temp_Employment$Absolute_mean[(round(dim(Depression_with_temp_Employment)[1]*0.8) + 1): dim(Depression_with_temp_Employment)[1]])^2)
+```
+
+
+```{r, message=FALSE}
+library(randomForest)
+rf <- randomForest(Absolute_mean ~ temp + Employ, data = Depression_with_temp_Employment[1:round(0.8*dim(Depression_with_temp_Employment)[1]), ], importance = TRUE, na.action = na.omit)
+```
+
+```{r, echo=FALSE}
+pred.rf = predict(rf, newdata = Depression_with_temp_Employment[(round(dim(Depression_with_temp_Employment)[1]*0.8) + 1): dim(Depression_with_temp_Employment)[1]  ,])
+```
+
+```{r, echo=FALSE}
+MSErf = mean((pred.rf - Depression_with_temp_Employment$Absolute_mean[(round(dim(Depression_with_temp_Employment)[1]*0.8) + 1): dim(Depression_with_temp_Employment)[1]])^2)
+
+```
+
+Second, we focus on the depression data by states of US. Depression data of 50 states and Washington, D.C. are available and more demographics factors for each state are considered for modelling, such as education and median age. ARIMA, time series regression and randomForest by group of keyword and region are used for prediction.
+
+Generally, mean square error of time series regression and randomForest is lower than that of ARIMA. This is not surprising because for the regression model, more factors of depression are considered for prediction.
