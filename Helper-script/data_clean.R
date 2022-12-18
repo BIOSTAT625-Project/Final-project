@@ -15,6 +15,7 @@ state_list <- read.csv("state.csv")
 keywords_list <- c("depression", "depressed", "empty", "fatigue", 
                    "feeling sad", "guilty", "insomnia", "suicide")
 
+# Harmonize relative search volumes of different time periods
 relative_convert <- function(df_late, df_early) {
   df <- df_early %>%
     full_join(df_late,
@@ -37,6 +38,7 @@ relative_convert <- function(df_late, df_early) {
   return(df)
 }
 
+# Combine data from different years
 combine_vol <- function(keyword) {
   state_1722 <- read.csv(paste0(keyword, "_by_state.csv")) %>% 
     rename(week = Week, relative = Relative, absolute = Absolute, region = State) %>% 
@@ -61,6 +63,7 @@ combine_vol <- function(keyword) {
   return(state_1722)
 }
 
+# Convert relative search volume to absolute search volume
 absolute_convert <- function(df) {
   lm_mods <- summary(lmList(formula = absolute ~ relative - 1 | region,
                             data = df))$coefficients[, "Estimate", ] %>%
@@ -105,8 +108,6 @@ combine_all_trends <- function() {
   write.csv(df, "Clean_data/google_trends_all.csv")
 }
 
-# Usage: (1) Change the path to your Dropbox folder using setwd(); (2) Run "dat <- combine_all()".
-
 # ===== WEATHER DATA =====
 
 combine_weather <- function() {
@@ -122,18 +123,4 @@ combine_weather <- function() {
   write.csv(us_weather, "Clean_data/weather.csv")
   #return(us_weather)
 }
-
-# ===== 
-
-
-
-
-
-
-
-
-
-
-
-
 
